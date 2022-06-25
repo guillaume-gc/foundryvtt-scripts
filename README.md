@@ -23,5 +23,5 @@ Note: the conversion is based on DnD / Pathfinder logic, not the real world. 1.5
 # How to use
 
 1. Create a Foundry VTT [script macro](https://foundryvtt.com/article/macros/).
-2. Copy the code in the src/{script name} directory and past it in Foundry.
+2. Copy the code in the `src/{script name}` directory and past it in Foundry.
 3. Enjoy.
