@@ -18,6 +18,8 @@ Available conversion :
 
 The result is whispered to the user, meaning only they can see it.
 
+Note: the conversion is based on DnD / Pathfinder logic, not the real world. 1.5 meter is 5 feet and 1 kilogram is 2 pounds.
+
 # How to use
 
 1. Create a Foundry VTT [script macro](https://foundryvtt.com/article/macros/).
