@@ -8,7 +8,7 @@ Currently, only French is supported.
 
 ## Converter
 
-A simple tool to convert the most commonly used measurements in the imperial and metric systems.
+Convert most commonly used measurements in the imperial and metric systems.
 
 Available conversion :
 
@@ -20,6 +20,12 @@ Available conversion :
 The result is whispered to the user, meaning only they can see it.
 
 Note: the conversion is based on DnD / Pathfinder logic, not the real world. 1.5 meter is 5 feet and 1 kilogram is 2 pounds.
+
+## Weight Modifier
+
+Currently, there is a bug in Foundry system Pathfinder 1e preventing any item weight modification, this macro can solve this problem.
+
+To use this macro, a token linked to an actor must be selected.
 
 # How to use
 
