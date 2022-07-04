@@ -11,7 +11,7 @@ const items = actor.items
   )
   .map((o) => ({ name: o.name, id: o.id, weight: o.data?.data?.weight }))
 const itemOptions =
-  `<option value="">Choisissez un objet</option>` +
+  "<option>Choisissez un objet</option>" +
   items.map(
     (i) => `<option value="${i.id}">${i.name} <i>(Poids: ${i.weight})</i></option>`,
   )
@@ -36,11 +36,15 @@ new Dialog({
     `,
   buttons: {
     change: {
-      label: 'Set Weight',
+      label: 'Changer le poids',
       callback: async (htm) => {
-        const itemId = htm.find('#itemSelect')[0].value
-        if (!itemId) return
-        const newWeight = parseFloat(htm.find('#newWeight')[0].value)
+        const itemId = htm.find('#itemSelect')[0]?.value
+
+        if (!itemId) {
+          return
+        }
+
+        const newWeight = parseFloat(itemId)
         await actor.items
           .get(itemId)
           .update({ 'data.weight': newWeight, 'data.baseWeight': newWeight })
