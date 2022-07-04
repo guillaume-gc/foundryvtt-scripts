@@ -9,11 +9,11 @@ const items = actor.items
       'container',
     ].includes(type),
   )
-  .map((o) => ({ Nom: o.name, id: o.id, Point: o.data?.data?.weight }))
+  .map((o) => ({ name: o.name, id: o.id, weight: o.data?.data?.weight }))
 const itemOptions =
   `<option value="">Choisisser un objet</option>` +
   items.map(
-    (i) => `<option value="${i.id}">${i.name} (weight: ${i.weight})</option>`,
+    (i) => `<option value="${i.id}">${i.name} <i>(Poids: ${i.weight})</i></option>`,
   )
 
 const d = new Dialog({
