@@ -11,6 +11,7 @@ Currently, only French is supported.
 A simple tool to convert the most commonly used measurements in the imperial and metric systems.
 
 Available conversion :
+
 - Meters to feet
 - Feet to Meters
 - Kilograms to Pounds

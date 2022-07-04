@@ -1,0 +1,22 @@
+{
+  "name": "foundryvtt-scripts",
+  "version": "1.0.0",
+  "description": "Basic scripts used for personal usage in foundry",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "prettier:write": "prettier -w ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/guillaume-gc/foundryvtt-scripts.git"
+  },
+  "author": "Guillaume C",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/guillaume-gc/foundryvtt-scripts/issues"
+  },
+  "homepage": "https://github.com/guillaume-gc/foundryvtt-scripts#readme",
+  "devDependencies": {
+    "prettier": "^2.7.1"
+  }
+}
