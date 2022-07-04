@@ -11,12 +11,12 @@ const items = actor.items
   )
   .map((o) => ({ name: o.name, id: o.id, weight: o.data?.data?.weight }))
 const itemOptions =
-  `<option value="">Choisisser un objet</option>` +
+  `<option value="">Choisissez un objet</option>` +
   items.map(
     (i) => `<option value="${i.id}">${i.name} <i>(Poids: ${i.weight})</i></option>`,
   )
 
-const d = new Dialog({
+new Dialog({
   title: "Changement de Poids d'un Objet",
   content: `
         <form class="flexcol">
