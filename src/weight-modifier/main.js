@@ -39,13 +39,20 @@ new Dialog({
     change: {
       label: 'Changer le poids',
       callback: async (htm) => {
-        const itemId = htm.find('#itemSelect')[0]?.value
+        const itemId = htm.find('#itemSelect')?.[0]?.value
+        const newWeight = parseFloat(htm.find('#newWeight')?.[0]?.value)
 
-        if (!itemId) {
+        if (itemId == null || newWeight == null) {
+          console.log(
+            `Weight Modifier | Item ID "${itemId}" or Weight "${newWeight}" is undefined`,
+          )
           return
         }
 
-        const newWeight = parseFloat(itemId)
+        console.log(
+          `Weight Modifier | Setting item ${itemId} weight to ${newWeight}`,
+        )
+
         await actor.items
           .get(itemId)
           .update({ 'data.weight': newWeight, 'data.baseWeight': newWeight })
