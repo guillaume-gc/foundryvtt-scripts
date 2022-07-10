@@ -27,8 +27,10 @@ Currently, there is a bug in Foundry system Pathfinder 1e preventing any item we
 
 To use this macro, a token linked to an actor must be selected.
 
+Credit: based on Discord user websterguy#1136 script
+
 # How to use
 
 1. Create a Foundry VTT [script macro](https://foundryvtt.com/article/macros/).
-2. Copy the code in the `src/{script name}` directory and past it in Foundry.
+2. Copy the code in the `src/{script name}/main.js` directory and past it in Foundry.
 3. Enjoy.
