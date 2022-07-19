@@ -33,12 +33,12 @@ const renderChatMessage = (chatMessage) => {
 
 const getInitialMsg = (actors) => {
   if (actors.length === 1) {
-    return `Quelle information voulez vous obtenir pour l'acteur suivant : <strong>${actors[0].name}</strong>`
+    return `<a>Acteur selectionné : <strong>${actors[0].name}</strong>`
   }
 
-  return `Quelle information voulez vous obtenir pour les acteurs suivants : <strong>${actors
+  return `<a>Acteurs selectionnés : <strong>${actors
     .map((o) => o.name)
-    .join('</strong>, <strong>')}</strong>`
+    .join('</strong>, <strong>')}</strong></a>`
 }
 
 const getDemoralizeTable = () => {
@@ -53,7 +53,11 @@ const getDemoralizeTable = () => {
     const rollData = actor.getRollData({ forceRefresh: false })
     const dc = 10 + rollData.attributes.hd.total + rollData.abilities.wis.mod
 
-    return `<tr><td>${actor.name}</td><td>${dc}</td></tr>`
+    return `
+      <tr>
+        <td>${actor.name}</td>
+        <td>${dc}</td>
+      </tr>`
   })
 
   return getTable(header, rows)
@@ -106,7 +110,7 @@ const getDiplomacyTable = () => {
     `
   })
 
-  return getTable(header, rows)
+  return getTable(header, rows.join(''))
 }
 
 const getAcTable = () => {
@@ -137,39 +141,150 @@ const getAcTable = () => {
     `
   })
 
-  return getTable(header, rows)
+  return getTable(header, rows.join(''))
+}
+
+const getCmdTable = () => {
+  const header = `
+    <tr>
+      <td colSpan="3">Degré de Manœuvre Défensive</td>
+    <tr>
+    <td>Acteur</td>
+    <td>Situation</td>
+    <td>CMD</td>
+  `
+
+  const rows = actors.map((actor) => {
+    const rollData = actor.getRollData({ forceRefresh: false })
+    const dataArr = [
+      { label: 'Base', data: rollData.attributes.cmd.total},
+      { label: 'Pris au dépourvu', data: rollData.attributes.cmd.flatFootedTotal },
+    ]
+
+    const actorRow = `<td rowspan='5'>${actor.name}</td>`
+
+    const dmdRows = getTableSubRows(dataArr)
+
+    return `
+      <tr>${actorRow}</tr>
+      <tr>${dmdRows}</tr>
+    `
+  })
+
+  return getTable(header, rows.join(''))
+}
+
+const getFeintTable = () => {
+  const header = `
+    <tr>
+      <td colSpan="2">Feinter en combat</td>
+    <tr>
+    <td>Acteur</td>
+    <td>DD</td>
+  `
+
+  const rows = actors.map((actor) => {
+    const rollData = actor.getRollData({ forceRefresh: false })
+    const babDc = 10 + rollData.attributes.bab.total + rollData.abilities.wis.mod
+    const senseMotiveDc = 10 + rollData.skills.sen.mod
+    const senseMotiveTrained = rollData.skills.sen.rank > 0
+
+    let dc
+    if (senseMotiveDc > babDc && senseMotiveTrained) {
+      dc = senseMotiveDc
+    }
+    else {
+      dc = babDc
+    }
+
+    return `
+      <tr>
+        <td>${actor.name}</td>
+        <td>${dc}</td>
+      </tr>`
+  })
+
+  return getTable(header, rows.join(''))
+}
+
+const getSrTable = () => {
+  const header = `
+    <tr>
+      <td colSpan="2">Resistance à la Magie</td>
+    <tr>
+    <td>Acteur</td>
+    <td>RM</td>
+  `
+
+  const rows = actors.map((actor) => {
+    const rollData = actor.getRollData({ forceRefresh: false })
+    const sr = rollData.attributes.sr.total
+    const hasSr = sr > 0
+
+    return `
+      <tr>
+        <td>${actor.name}</td>
+        <td>${hasSr ? sr : 'Aucune'}</td>
+      </tr>`
+  })
+
+  return getTable(header, rows.join(''))
 }
 
 const getSocialDefenses = () => {
   const demoralizeTable = getDemoralizeTable()
   const diplomacyTable = getDiplomacyTable()
 
-  const chatMessage = demoralizeTable + diplomacyTable
-
-  renderChatMessage(chatMessage)
+  return demoralizeTable + diplomacyTable
 }
 
 const getCombatDefenses = () => {
   const acTable = getAcTable()
+  const dmdTable = getCmdTable()
+  const feintTable = getFeintTable()
+  const srTable = getSrTable()
 
-  renderChatMessage(acTable)
+  return acTable + dmdTable + feintTable + srTable
+}
+
+const renderSocialDefenses = () => {
+  const chatMessage = getSocialDefenses()
+
+  renderChatMessage(chatMessage)
+}
+
+const renderCombatDefenses = () => {
+  const chatMessage = getCombatDefenses()
+
+  renderChatMessage(chatMessage)
+}
+
+const renderAll = () => {
+  const socialDefenses = getSocialDefenses()
+  const combatDefenses = getCombatDefenses()
+
+  const chatMessage = socialDefenses + combatDefenses
+
+  renderChatMessage(chatMessage)
 }
 
 const openDialog = (actors) => {
-  const msg = getInitialMsg(actors)
-
   new Dialog({
     title: "Obtenir les informations d'acteurs",
-    content: `<p>${msg}</p>`,
+    content: getInitialMsg(actors),
     buttons: {
       socialDefenses: {
         label: 'Défenses Sociales',
-        callback: getSocialDefenses,
+        callback: renderSocialDefenses,
       },
       combatDefenses: {
         label: 'Défenses Combat',
-        callback: getCombatDefenses,
+        callback: renderCombatDefenses,
       },
+      all: {
+        label: 'Tout',
+        callback: renderAll,
+      }
     },
   }).render(true)
 }
