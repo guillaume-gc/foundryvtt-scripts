@@ -296,8 +296,7 @@ const getDamageImmunitiesTable = () => {
 
   const rows = actors.map((actor) => {
     const rollData = actor.getRollData({ forceRefresh: false })
-    const damageImmunity = rollData.traits.di.value
-      .map(translate)
+    const damageImmunity = rollData.traits.di.value.map(translate)
     const damageImmunityCustom = rollData.traits.di.custom
     if (damageImmunityCustom) {
       damageImmunity.push(damageImmunityCustom)
@@ -308,7 +307,9 @@ const getDamageImmunitiesTable = () => {
     return `
       <tr>
         <td style='${cellStyle}'>${actor.name}</td>
-        <td style='${cellStyle}'>${hasDamageImmunity ? damageImmunity.join(', ') : 'Aucun'}</td>
+        <td style='${cellStyle}'>${
+      hasDamageImmunity ? damageImmunity.join(', ') : 'Aucun'
+    }</td>
       </tr>`
   })
 
@@ -326,8 +327,7 @@ const getImmunitiesTable = () => {
 
   const rows = actors.map((actor) => {
     const rollData = actor.getRollData({ forceRefresh: false })
-    const immunity = rollData.traits.ci.value
-      .map(translate)
+    const immunity = rollData.traits.ci.value.map(translate)
     const immunityCustom = rollData.traits.ci.custom
     if (immunityCustom) {
       immunity.push(immunityCustom)
@@ -338,7 +338,9 @@ const getImmunitiesTable = () => {
     return `
       <tr>
         <td style='${cellStyle}'>${actor.name}</td>
-        <td style='${cellStyle}'>${hasImmunity ? immunity.join(', ') : 'Aucun'}</td>
+        <td style='${cellStyle}'>${
+      hasImmunity ? immunity.join(', ') : 'Aucun'
+    }</td>
       </tr>`
   })
 
@@ -356,8 +358,7 @@ const getDamageVulnerabilitiesTable = () => {
 
   const rows = actors.map((actor) => {
     const rollData = actor.getRollData({ forceRefresh: false })
-    const damageVulnerabilities = rollData.traits.dv.value
-      .map(translate)
+    const damageVulnerabilities = rollData.traits.dv.value.map(translate)
     const damageVulnerabilitiesCustom = rollData.traits.dv.custom
     if (damageVulnerabilitiesCustom) {
       damageVulnerabilities.push(damageVulnerabilitiesCustom)
@@ -368,7 +369,9 @@ const getDamageVulnerabilitiesTable = () => {
     return `
       <tr>
         <td style='${cellStyle}'>${actor.name}</td>
-        <td style='${cellStyle}'>${hasDamageVulnerabilities ? damageVulnerabilities.join(', ') : 'Aucune'}</td>
+        <td style='${cellStyle}'>${
+      hasDamageVulnerabilities ? damageVulnerabilities.join(', ') : 'Aucune'
+    }</td>
       </tr>`
   })
 
@@ -393,15 +396,17 @@ const getCombatDefenses = () => {
   const immunities = getImmunitiesTable()
   const damageVulnerabilities = getDamageVulnerabilitiesTable()
 
-  return acTable
-    + dmdTable
-    + feintTable
-    + srTable
-    + energyResistanceTable
-    + resistanceTable
-    + damageImmunities
-    + immunities
-    + damageVulnerabilities
+  return (
+    acTable +
+    dmdTable +
+    feintTable +
+    srTable +
+    energyResistanceTable +
+    resistanceTable +
+    damageImmunities +
+    immunities +
+    damageVulnerabilities
+  )
 }
 
 const renderSocialDefenses = () => {
@@ -423,11 +428,8 @@ const renderAll = () => {
   const immunities = getImmunities()
   const vulnerabilities = getVulnerabilities()
 
-  const chatMessage = socialDefenses
-    + combatDefenses
-    + resistances
-    + immunities
-    + vulnerabilities
+  const chatMessage =
+    socialDefenses + combatDefenses + resistances + immunities + vulnerabilities
 
   renderChatMessage(chatMessage)
 }
@@ -448,7 +450,7 @@ const translate = (e) => {
     positive: 'Énergie Postive',
     precision: 'Précision',
     nonlethal: 'Non Léthal',
-    energyDrain: 'Absortion d\'Énergy',
+    energyDrain: "Absortion d'Énergy",
     fear: 'Apeuré(e)',
     blind: 'Aveuglé(e)',
     confuse: 'Confus(e)',
