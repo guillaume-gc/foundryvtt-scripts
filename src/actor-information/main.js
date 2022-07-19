@@ -4,6 +4,7 @@
 const c = {
   actorNames: [],
 }
+const cellStyle = 'min-width: 100px'
 // END CONFIGURATION
 
 const getTable = (header, rows) =>
@@ -46,8 +47,8 @@ const getDemoralizeTable = () => {
     <tr>
       <td colSpan="2">Démoraliser (Intimidation)</td>
     <tr>
-    <td>Acteur</td>
-    <td>DD</td>
+    <td style='${cellStyle}'>Acteur</td>
+    <td style='${cellStyle}'>DD</td>
   `
   const rows = actors.map((actor) => {
     const rollData = actor.getRollData({ forceRefresh: false })
@@ -55,8 +56,8 @@ const getDemoralizeTable = () => {
 
     return `
       <tr>
-        <td>${actor.name}</td>
-        <td>${dc}</td>
+        <td style='${cellStyle}'>${actor.name}</td>
+        <td style='${cellStyle}'>${dc}</td>
       </tr>`
   })
 
@@ -67,10 +68,10 @@ const getTableSubRows = (dataArr) => {
   const dipRows = dataArr.map((e) => {
     return `
         <tr>
-          <td>
+          <td style='${cellStyle}'>
             ${e.label}
           </td>
-          <td>
+          <td style='${cellStyle}'>
             ${e.data}
           </td>
         </tr>
@@ -85,9 +86,9 @@ const getDiplomacyTable = () => {
     <tr>
       <td colSpan="3">Diplomacie</td>
     <tr>
-    <td>Acteur</td>
-    <td>Attitude initial</td>
-    <td>DD</td>
+    <td style='${cellStyle}'>Acteur</td>
+    <td style='${cellStyle}'>Attitude initial</td>
+    <td style='${cellStyle}'>DD</td>
   `
 
   const rows = actors.map((actor) => {
@@ -118,9 +119,9 @@ const getAcTable = () => {
     <tr>
       <td colSpan="3">Classe d'Armure</td>
     <tr>
-    <td>Acteur</td>
-    <td>Situation</td>
-    <td>CA</td>
+    <td style='${cellStyle}'>Acteur</td>
+    <td style='${cellStyle}'>Situation</td>
+    <td style='${cellStyle}'>CA</td>
   `
 
   const rows = actors.map((actor) => {
@@ -152,9 +153,9 @@ const getCmdTable = () => {
     <tr>
       <td colSpan="3">Degré de Manœuvre Défensive</td>
     <tr>
-    <td>Acteur</td>
-    <td>Situation</td>
-    <td>CMD</td>
+    <td style='${cellStyle}'>Acteur</td>
+    <td style='${cellStyle}'>Situation</td>
+    <td style='${cellStyle}'>CMD</td>
   `
 
   const rows = actors.map((actor) => {
@@ -185,8 +186,8 @@ const getFeintTable = () => {
     <tr>
       <td colSpan="2">Feinter en combat (Bluff)</td>
     <tr>
-    <td>Acteur</td>
-    <td>DD</td>
+    <td style='${cellStyle}'>Acteur</td>
+    <td style='${cellStyle}'>DD</td>
   `
 
   const rows = actors.map((actor) => {
@@ -205,8 +206,8 @@ const getFeintTable = () => {
 
     return `
       <tr>
-        <td>${actor.name}</td>
-        <td>${dc}</td>
+        <td style='${cellStyle}'>${actor.name}</td>
+        <td style='${cellStyle}'>${dc}</td>
       </tr>`
   })
 
@@ -218,8 +219,8 @@ const getEnergyResistanceTable = () => {
     <tr>
       <td colSpan="2">Resistance aux énérgies</td>
     <tr>
-    <td>Acteur</td>
-    <td>Resistances</td>
+    <td style='${cellStyle}'>Acteur</td>
+    <td style='${cellStyle}'>Resistances</td>
   `
 
   const rows = actors.map((actor) => {
@@ -228,8 +229,8 @@ const getEnergyResistanceTable = () => {
 
     return `
       <tr>
-        <td>${actor.name}</td>
-        <td>${resistances}</td>
+        <td style='${cellStyle}'>${actor.name}</td>
+        <td style='${cellStyle}'>${resistances}</td>
       </tr>`
   })
 
@@ -241,8 +242,8 @@ const getResistanceTable = () => {
     <tr>
       <td colSpan="2">Resistances</td>
     <tr>
-    <td>Acteur</td>
-    <td>Resistances</td>
+    <td style='${cellStyle}'>Acteur</td>
+    <td style='${cellStyle}'>Resistances</td>
   `
 
   const rows = actors.map((actor) => {
@@ -251,8 +252,8 @@ const getResistanceTable = () => {
 
     return `
       <tr>
-        <td>${actor.name}</td>
-        <td>${resistances}</td>
+        <td style='${cellStyle}'>${actor.name}</td>
+        <td style='${cellStyle}'>${resistances}</td>
       </tr>`
   })
 
@@ -264,8 +265,8 @@ const getSrTable = () => {
     <tr>
       <td colSpan="2">Resistance à la Magie</td>
     <tr>
-    <td>Acteur</td>
-    <td>RM</td>
+    <td style='${cellStyle}'>Acteur</td>
+    <td style='${cellStyle}'>RM</td>
   `
 
   const rows = actors.map((actor) => {
@@ -275,8 +276,70 @@ const getSrTable = () => {
 
     return `
       <tr>
-        <td>${actor.name}</td>
-        <td>${hasSr ? sr : 'Aucune'}</td>
+        <td style='${cellStyle}'>${actor.name}</td>
+        <td style='${cellStyle}'>${hasSr ? sr : 'Aucune'}</td>
+      </tr>`
+  })
+
+  return getTable(header, rows)
+}
+
+const getDamageImmunitiesTable = () => {
+  const header = `
+    <tr>
+      <td colSpan="2">Immunités aux dommages</td>
+    <tr>
+    <td style='min-width: 100px'>Acteur</td>
+    <td style='${cellStyle}'>Resistances</td>
+  `
+
+  const rows = actors.map((actor) => {
+    const rollData = actor.getRollData({ forceRefresh: false })
+    const damageImmunityValue = rollData.traits.di.value
+      .map(translate)
+    const damageImmunityCustom = rollData.traits.di.custom
+    const damageImmunityAll = [...damageImmunityValue]
+    if (damageImmunityCustom) {
+      damageImmunityAll.push(damageImmunityCustom)
+    }
+
+    const hasDamageImmunity = damageImmunityAll.length > 0
+
+    return `
+      <tr>
+        <td style='${cellStyle}'>${actor.name}</td>
+        <td style='${cellStyle}'>${hasDamageImmunity ? damageImmunityAll.join(', ') : 'Aucun'}</td>
+      </tr>`
+  })
+
+  return getTable(header, rows)
+}
+
+const getImmunitiesTable = () => {
+  const header = `
+    <tr>
+      <td colSpan="2">Immunités</td>
+    <tr>
+    <td style='min-width: 100px'>Acteur</td>
+    <td style='${cellStyle}'>Resistances</td>
+  `
+
+  const rows = actors.map((actor) => {
+    const rollData = actor.getRollData({ forceRefresh: false })
+    const damageImmunityValue = rollData.traits.ci.value
+      .map(translate)
+    const immunityCustom = rollData.traits.ci.custom
+    const immunityAll = [...damageImmunityValue]
+    if (immunityCustom) {
+      immunityAll.push(immunityCustom)
+    }
+
+    const hasImmunity = immunityAll.length > 0
+
+    return `
+      <tr>
+        <td style='${cellStyle}'>${actor.name}</td>
+        <td style='${cellStyle}'>${hasImmunity ? immunityAll.join(', ') : 'Aucun'}</td>
       </tr>`
   })
 
@@ -306,6 +369,13 @@ const getResistances = () => {
   return energyResistanceTable + resistanceTable
 }
 
+const getImmunities = () => {
+  const damageImmunities = getDamageImmunitiesTable()
+  const immunities = getImmunitiesTable()
+
+  return damageImmunities + immunities
+}
+
 const renderSocialDefenses = () => {
   const chatMessage = getSocialDefenses()
 
@@ -324,14 +394,63 @@ const renderResistances = () => {
   renderChatMessage(chatMessage)
 }
 
+const renderImmunities = () => {
+  const chatMessage = getImmunities()
+
+  renderChatMessage(chatMessage)
+}
+
 const renderAll = () => {
   const socialDefenses = getSocialDefenses()
   const combatDefenses = getCombatDefenses()
-  const resistancesWeaknesses = getResistances()
+  const resistances = getResistances()
+  const immunities = getImmunities()
 
-  const chatMessage = socialDefenses + combatDefenses + resistancesWeaknesses
+  const chatMessage = socialDefenses
+    + combatDefenses
+    + resistances
+    + immunities
 
   renderChatMessage(chatMessage)
+}
+
+const translate = (e) => {
+  const translationMap = {
+    untyped: 'Non Typé',
+    slashing: 'Tranchant',
+    piercing: 'Perçant',
+    bludgeoning: 'Contondant',
+    fire: 'Feu',
+    electric: 'Electricité',
+    cold: 'Froid',
+    acid: 'Acid',
+    sonic: 'Sonique',
+    force: 'Force',
+    negative: 'Énergie Négative',
+    positive: 'Énergie Postive',
+    precision: 'Précision',
+    nonlethal: 'Non Léthal',
+    energyDrain: 'Absortion d\'Énergy',
+    fear: 'Apeuré(e)',
+    blind: 'Aveuglé(e)',
+    confuse: 'Confus(e)',
+    deathEffects: 'Effets de Mort',
+    dazzle: 'Ébloui(e)',
+    mindAffecting: 'Effects Mentaux',
+    stun: 'Étourdi(e)',
+    fatigue: 'Fatigué(e)',
+    sicken: 'Fiévreux(se)',
+    daze: 'Hébété(e)',
+    disease: 'Maladie',
+    paralyze: 'Paralysé(e)',
+    petrify: 'Pétrifié(e)',
+    poison: 'Poison',
+    bleed: 'Saignement',
+    sleep: 'Sommeil',
+    deaf: 'Sourd(e)',
+  }
+
+  return translationMap[e] || e
 }
 
 const openDialog = (actors) => {
@@ -340,16 +459,20 @@ const openDialog = (actors) => {
     content: getInitialMsg(actors),
     buttons: {
       socialDefenses: {
-        label: 'Défenses Sociales',
+        label: 'Social',
         callback: renderSocialDefenses,
       },
       combatDefenses: {
-        label: 'Défenses Combat',
+        label: 'Combat',
         callback: renderCombatDefenses,
       },
-      resistancesWeaknesses: {
+      resistances: {
         label: 'Résistances',
         callback: renderResistances,
+      },
+      immunities: {
+        label: 'Immunités',
+        callback: renderImmunities,
       },
       all: {
         label: 'Tout',
