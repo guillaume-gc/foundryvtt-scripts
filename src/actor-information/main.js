@@ -13,7 +13,7 @@ const getTable = (header, rows) =>
         ${header}
       </thead>
       <tbody>
-        ${rows}
+        ${rows.join('')}
       </tbody>
     </table>
   `
@@ -95,9 +95,9 @@ const getDiplomacyTable = () => {
     const dataArr = [
       { label: 'Hostile', data: 25 + rollData.abilities.cha.mod },
       { label: 'Inamical', data: 20 + rollData.abilities.cha.mod },
-      { label: 'Indifférent', data: 15 + rollData.abilities.cha.mod},
+      { label: 'Indifférent', data: 15 + rollData.abilities.cha.mod },
       { label: 'Amical', data: 10 + rollData.abilities.cha.mod },
-      { label: 'Serviable', data: 0 + rollData.abilities.cha.mod},
+      { label: 'Serviable', data: 0 + rollData.abilities.cha.mod },
     ]
 
     const actorRow = `<td rowspan='8'>${actor.name}</td>`
@@ -110,7 +110,7 @@ const getDiplomacyTable = () => {
     `
   })
 
-  return getTable(header, rows.join(''))
+  return getTable(header, rows)
 }
 
 const getAcTable = () => {
@@ -126,9 +126,12 @@ const getAcTable = () => {
   const rows = actors.map((actor) => {
     const rollData = actor.getRollData({ forceRefresh: false })
     const dataArr = [
-      { label: 'Base', data: rollData.attributes.ac.normal.total},
+      { label: 'Base', data: rollData.attributes.ac.normal.total },
       { label: 'Attaque de Contact', data: rollData.attributes.ac.touch.total },
-      { label: 'Pris au dépourvu', data: rollData.attributes.ac.flatFooted.total },
+      {
+        label: 'Pris au dépourvu',
+        data: rollData.attributes.ac.flatFooted.total,
+      },
     ]
 
     const actorRow = `<td rowspan='5'>${actor.name}</td>`
@@ -141,7 +144,7 @@ const getAcTable = () => {
     `
   })
 
-  return getTable(header, rows.join(''))
+  return getTable(header, rows)
 }
 
 const getCmdTable = () => {
@@ -157,8 +160,11 @@ const getCmdTable = () => {
   const rows = actors.map((actor) => {
     const rollData = actor.getRollData({ forceRefresh: false })
     const dataArr = [
-      { label: 'Base', data: rollData.attributes.cmd.total},
-      { label: 'Pris au dépourvu', data: rollData.attributes.cmd.flatFootedTotal },
+      { label: 'Base', data: rollData.attributes.cmd.total },
+      {
+        label: 'Pris au dépourvu',
+        data: rollData.attributes.cmd.flatFootedTotal,
+      },
     ]
 
     const actorRow = `<td rowspan='5'>${actor.name}</td>`
@@ -171,13 +177,13 @@ const getCmdTable = () => {
     `
   })
 
-  return getTable(header, rows.join(''))
+  return getTable(header, rows)
 }
 
 const getFeintTable = () => {
   const header = `
     <tr>
-      <td colSpan="2">Feinter en combat</td>
+      <td colSpan="2">Feinter en combat (Bluff)</td>
     <tr>
     <td>Acteur</td>
     <td>DD</td>
@@ -185,15 +191,15 @@ const getFeintTable = () => {
 
   const rows = actors.map((actor) => {
     const rollData = actor.getRollData({ forceRefresh: false })
-    const babDc = 10 + rollData.attributes.bab.total + rollData.abilities.wis.mod
+    const babDc =
+      10 + rollData.attributes.bab.total + rollData.abilities.wis.mod
     const senseMotiveDc = 10 + rollData.skills.sen.mod
     const senseMotiveTrained = rollData.skills.sen.rank > 0
 
     let dc
     if (senseMotiveDc > babDc && senseMotiveTrained) {
       dc = senseMotiveDc
-    }
-    else {
+    } else {
       dc = babDc
     }
 
@@ -204,7 +210,53 @@ const getFeintTable = () => {
       </tr>`
   })
 
-  return getTable(header, rows.join(''))
+  return getTable(header, rows)
+}
+
+const getEnergyResistanceTable = () => {
+  const header = `
+    <tr>
+      <td colSpan="2">Resistance aux énérgies</td>
+    <tr>
+    <td>Acteur</td>
+    <td>Resistances</td>
+  `
+
+  const rows = actors.map((actor) => {
+    const rollData = actor.getRollData({ forceRefresh: false })
+    const resistances = rollData.traits.eres
+
+    return `
+      <tr>
+        <td>${actor.name}</td>
+        <td>${resistances}</td>
+      </tr>`
+  })
+
+  return getTable(header, rows)
+}
+
+const getResistanceTable = () => {
+  const header = `
+    <tr>
+      <td colSpan="2">Resistances</td>
+    <tr>
+    <td>Acteur</td>
+    <td>Resistances</td>
+  `
+
+  const rows = actors.map((actor) => {
+    const rollData = actor.getRollData({ forceRefresh: false })
+    const resistances = rollData.traits.cres
+
+    return `
+      <tr>
+        <td>${actor.name}</td>
+        <td>${resistances}</td>
+      </tr>`
+  })
+
+  return getTable(header, rows)
 }
 
 const getSrTable = () => {
@@ -228,7 +280,7 @@ const getSrTable = () => {
       </tr>`
   })
 
-  return getTable(header, rows.join(''))
+  return getTable(header, rows)
 }
 
 const getSocialDefenses = () => {
@@ -247,6 +299,13 @@ const getCombatDefenses = () => {
   return acTable + dmdTable + feintTable + srTable
 }
 
+const getResistances = () => {
+  const energyResistanceTable = getEnergyResistanceTable()
+  const resistanceTable = getResistanceTable()
+
+  return energyResistanceTable + resistanceTable
+}
+
 const renderSocialDefenses = () => {
   const chatMessage = getSocialDefenses()
 
@@ -259,11 +318,18 @@ const renderCombatDefenses = () => {
   renderChatMessage(chatMessage)
 }
 
+const renderResistances = () => {
+  const chatMessage = getResistances()
+
+  renderChatMessage(chatMessage)
+}
+
 const renderAll = () => {
   const socialDefenses = getSocialDefenses()
   const combatDefenses = getCombatDefenses()
+  const resistancesWeaknesses = getResistances()
 
-  const chatMessage = socialDefenses + combatDefenses
+  const chatMessage = socialDefenses + combatDefenses + resistancesWeaknesses
 
   renderChatMessage(chatMessage)
 }
@@ -281,10 +347,14 @@ const openDialog = (actors) => {
         label: 'Défenses Combat',
         callback: renderCombatDefenses,
       },
+      resistancesWeaknesses: {
+        label: 'Résistances',
+        callback: renderResistances,
+      },
       all: {
         label: 'Tout',
         callback: renderAll,
-      }
+      },
     },
   }).render(true)
 }
