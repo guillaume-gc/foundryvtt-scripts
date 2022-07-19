@@ -21,14 +21,14 @@ const roll = async (type) => {
     const o = actors[a]
     await o.rollSavingThrow(type, {
       event: new MouseEvent({}),
-      noSound: a > 0
+      noSound: a > 0,
     })
   }
 }
 
 const openDialog = (actors) => {
   new Dialog({
-    title: 'Roll saving throw',
+    title: 'Jet de sauvegarde',
     content: getInitialMsg(actors),
     buttons: {
       fort: {
