@@ -346,6 +346,36 @@ const getImmunitiesTable = () => {
   return getTable(header, rows)
 }
 
+const getDamageVulnerabilitiesTable = () => {
+  const header = `
+    <tr>
+      <td colSpan="2">Vulnérabilités aux dommages</td>
+    <tr>
+    <td style='min-width: 100px'>Acteur</td>
+    <td style='${cellStyle}'>Vulnérabilités</td>
+  `
+
+  const rows = actors.map((actor) => {
+    const rollData = actor.getRollData({ forceRefresh: false })
+    const damageVulnerabilities = rollData.traits.dv.value
+      .map(translate)
+    const damageVulnerabilitiesCustom = rollData.traits.dv.custom
+    if (damageVulnerabilitiesCustom) {
+      damageVulnerabilities.push(damageVulnerabilitiesCustom)
+    }
+
+    const hasDamageVulnerabilities = damageVulnerabilities.length > 0
+
+    return `
+      <tr>
+        <td style='${cellStyle}'>${actor.name}</td>
+        <td style='${cellStyle}'>${hasDamageVulnerabilities ? damageVulnerabilities.join(', ') : 'Aucune'}</td>
+      </tr>`
+  })
+
+  return getTable(header, rows)
+}
+
 const getSocialDefenses = () => {
   const demoralizeTable = getDemoralizeTable()
   const diplomacyTable = getDiplomacyTable()
@@ -376,6 +406,10 @@ const getImmunities = () => {
   return damageImmunities + immunities
 }
 
+const getVulnerabilities = () => {
+  return getDamageVulnerabilitiesTable()
+}
+
 const renderSocialDefenses = () => {
   const chatMessage = getSocialDefenses()
 
@@ -400,16 +434,24 @@ const renderImmunities = () => {
   renderChatMessage(chatMessage)
 }
 
+const renderVulnerabilities = () => {
+  const chatMessage = getVulnerabilities()
+
+  renderChatMessage(chatMessage)
+}
+
 const renderAll = () => {
   const socialDefenses = getSocialDefenses()
   const combatDefenses = getCombatDefenses()
   const resistances = getResistances()
   const immunities = getImmunities()
+  const vulnerabilities = getVulnerabilities()
 
   const chatMessage = socialDefenses
     + combatDefenses
     + resistances
     + immunities
+    + vulnerabilities
 
   renderChatMessage(chatMessage)
 }
@@ -473,6 +515,10 @@ const openDialog = (actors) => {
       immunities: {
         label: 'Immunités',
         callback: renderImmunities,
+      },
+      vulnerabilities: {
+        label: 'Vulnerabilités',
+        callback: renderVulnerabilities,
       },
       all: {
         label: 'Tout',
