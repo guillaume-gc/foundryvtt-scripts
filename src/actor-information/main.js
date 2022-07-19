@@ -278,7 +278,8 @@ const getSrTable = () => {
       <tr>
         <td style='${cellStyle}'>${actor.name}</td>
         <td style='${cellStyle}'>${hasSr ? sr : 'Aucune'}</td>
-      </tr>`
+      </tr>
+    `
   })
 
   return getTable(header, rows)
@@ -295,20 +296,19 @@ const getDamageImmunitiesTable = () => {
 
   const rows = actors.map((actor) => {
     const rollData = actor.getRollData({ forceRefresh: false })
-    const damageImmunityValue = rollData.traits.di.value
+    const damageImmunity = rollData.traits.di.value
       .map(translate)
     const damageImmunityCustom = rollData.traits.di.custom
-    const damageImmunityAll = [...damageImmunityValue]
     if (damageImmunityCustom) {
-      damageImmunityAll.push(damageImmunityCustom)
+      damageImmunity.push(damageImmunityCustom)
     }
 
-    const hasDamageImmunity = damageImmunityAll.length > 0
+    const hasDamageImmunity = damageImmunity.length > 0
 
     return `
       <tr>
         <td style='${cellStyle}'>${actor.name}</td>
-        <td style='${cellStyle}'>${hasDamageImmunity ? damageImmunityAll.join(', ') : 'Aucun'}</td>
+        <td style='${cellStyle}'>${hasDamageImmunity ? damageImmunity.join(', ') : 'Aucun'}</td>
       </tr>`
   })
 
@@ -326,20 +326,19 @@ const getImmunitiesTable = () => {
 
   const rows = actors.map((actor) => {
     const rollData = actor.getRollData({ forceRefresh: false })
-    const damageImmunityValue = rollData.traits.ci.value
+    const immunity = rollData.traits.ci.value
       .map(translate)
     const immunityCustom = rollData.traits.ci.custom
-    const immunityAll = [...damageImmunityValue]
     if (immunityCustom) {
-      immunityAll.push(immunityCustom)
+      immunity.push(immunityCustom)
     }
 
-    const hasImmunity = immunityAll.length > 0
+    const hasImmunity = immunity.length > 0
 
     return `
       <tr>
         <td style='${cellStyle}'>${actor.name}</td>
-        <td style='${cellStyle}'>${hasImmunity ? immunityAll.join(', ') : 'Aucun'}</td>
+        <td style='${cellStyle}'>${hasImmunity ? immunity.join(', ') : 'Aucun'}</td>
       </tr>`
   })
 
@@ -388,26 +387,21 @@ const getCombatDefenses = () => {
   const dmdTable = getCmdTable()
   const feintTable = getFeintTable()
   const srTable = getSrTable()
-
-  return acTable + dmdTable + feintTable + srTable
-}
-
-const getResistances = () => {
   const energyResistanceTable = getEnergyResistanceTable()
   const resistanceTable = getResistanceTable()
-
-  return energyResistanceTable + resistanceTable
-}
-
-const getImmunities = () => {
   const damageImmunities = getDamageImmunitiesTable()
   const immunities = getImmunitiesTable()
+  const damageVulnerabilities = getDamageVulnerabilitiesTable()
 
-  return damageImmunities + immunities
-}
-
-const getVulnerabilities = () => {
-  return getDamageVulnerabilitiesTable()
+  return acTable
+    + dmdTable
+    + feintTable
+    + srTable
+    + energyResistanceTable
+    + resistanceTable
+    + damageImmunities
+    + immunities
+    + damageVulnerabilities
 }
 
 const renderSocialDefenses = () => {
@@ -418,24 +412,6 @@ const renderSocialDefenses = () => {
 
 const renderCombatDefenses = () => {
   const chatMessage = getCombatDefenses()
-
-  renderChatMessage(chatMessage)
-}
-
-const renderResistances = () => {
-  const chatMessage = getResistances()
-
-  renderChatMessage(chatMessage)
-}
-
-const renderImmunities = () => {
-  const chatMessage = getImmunities()
-
-  renderChatMessage(chatMessage)
-}
-
-const renderVulnerabilities = () => {
-  const chatMessage = getVulnerabilities()
 
   renderChatMessage(chatMessage)
 }
@@ -507,18 +483,6 @@ const openDialog = (actors) => {
       combatDefenses: {
         label: 'Combat',
         callback: renderCombatDefenses,
-      },
-      resistances: {
-        label: 'Résistances',
-        callback: renderResistances,
-      },
-      immunities: {
-        label: 'Immunités',
-        callback: renderImmunities,
-      },
-      vulnerabilities: {
-        label: 'Vulnerabilités',
-        callback: renderVulnerabilities,
       },
       all: {
         label: 'Tout',
