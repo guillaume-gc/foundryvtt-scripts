@@ -4,13 +4,12 @@ const openDialog = (actor) => {
     return
   }
 
-
   const items = actor.items
     .filter(({ type }) => type === 'buff')
     .map((o) => ({ id: o.id }))
 
   new Dialog({
-    title: "Changement de niveau des buffs",
+    title: 'Changement de niveau des buffs',
     content: `
         <form class="flexcol">
             <div class="form-group">
@@ -37,10 +36,8 @@ const openDialog = (actor) => {
           const newLevel = parseFloat(htm.find('#newWeight')?.[0]?.value)
 
           if (isNaN(newLevel)) {
-            console.log(
-              `Buff Level | "${newLevel}" is undefined`,
-            )
-            ui.notifications.warn('Le niveau entré n\'est pas correct')
+            console.log(`Buff Level | "${newLevel}" is undefined`)
+            ui.notifications.warn("Le niveau entré n'est pas correct")
             return
           }
 
@@ -48,19 +45,17 @@ const openDialog = (actor) => {
             `Buff Level | Setting ${items.length} levels to ${newLevel}`,
           )
 
-          const promises = items.map(({id}) => (
-            actor.items
-              .get(id)
-              .update({ 'data.level': newLevel})
-          ))
+          const promises = items.map(({ id }) =>
+            actor.items.get(id).update({ 'data.level': newLevel }),
+          )
 
           await Promise.all(promises)
 
-          console.log(
-            `Buff Level | Complete`,
-          )
+          console.log(`Buff Level | Complete`)
 
-          ui.notifications.info(`${items.length} buffs ont été mis au niveau ${newLevel}`)
+          ui.notifications.info(
+            `${items.length} buffs ont été mis au niveau ${newLevel}`,
+          )
         },
       },
     },

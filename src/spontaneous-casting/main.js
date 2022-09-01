@@ -12,8 +12,8 @@ const c = {
   actorNames: [],
   spontClasses: ['druid', 'cleric', 'warpriest', 'matreDesForgesNain'],
   spellbooks: {
-    ' (matreDesForgesNain-primary)': 'Maître des Forges'
-  }
+    ' (matreDesForgesNain-primary)': 'Maître des Forges',
+  },
 }
 // END CONFIGURATION
 
@@ -44,8 +44,7 @@ const openDialog = (actors) => {
   // Build spellbook options
   console.log('spellbooks ', spellbooks)
   let bookOptions = spellbooks.map(
-    (o, index) =>
-      `<option value="${o.name}">${o[1].label}</option>`,
+    (o, index) => `<option value="${o.name}">${o[1].label}</option>`,
   )
   if (!bookOptions.length) {
     ui.notifications.warn(
