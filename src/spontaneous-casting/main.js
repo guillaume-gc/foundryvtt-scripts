@@ -195,7 +195,7 @@ function populateSpontaneous(htm, spellSlotID, event = null) {
       (o) =>
         o.type === 'spell' &&
         o.data.data.level <= slotLevel &&
-        o.data.data.identifiedName?.startsWith('Soins') &&
+        o.data.data.atWill &&
         o.data.data.spellbook ===
           selectedSpell.data.data.spellbook.toLowerCase(),
     )
