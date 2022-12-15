@@ -27,7 +27,7 @@ new Dialog({
     },
     no: {
       icon: "<i class='fas fa-times'></i>",
-      label: 'Annuler',
+      label: 'Quitter',
       callback: () => {
         showMessage = false
       },
@@ -91,11 +91,8 @@ new Dialog({
 
     const { resultValue, inputName, resultName } = currentDialogueData
 
-    const chatData = {
-      user: game.userId,
-      content: `<b>${inputValue}</b> ${inputName} -> <b>${resultValue}</b> ${resultName}`,
-      whisper: [game.userId],
-    }
-    ChatMessage.create(chatData, {})
+    ui.notifications.info(
+      `<b>${inputValue}</b> ${inputName} -> <b>${resultValue}</b> ${resultName}`,
+    )
   },
 }).render(true)
