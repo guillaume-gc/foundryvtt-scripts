@@ -247,7 +247,7 @@ const useSpell = (htm, actor, spellSlots, preparedSpells, spontaneousSpells) => 
   const msg = `
     <div class="pf1 chat-card">
       <header class="card-header flexrow">
-        <h3 class="actor-name">Incantation Spontannée</h3>
+        <h3 class="actor-name">Incantation Spontanée</h3>
       </header>
       <div class="result-text">
         <p>${actorName} consomme le sort ${spellToUseName} (niveau ${spellToUseLevel}) pour lancer le sort ${spellToCastName}.</p>
@@ -326,7 +326,7 @@ const openDialog = (selectedTokens) => {
 
   // Display UI
   new Dialog({
-    title: 'Incantation Spontannée',
+    title: 'Incantation Spontanée',
     content: form,
     buttons: {
       use: {
