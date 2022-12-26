@@ -1,84 +1,262 @@
-/**
- * Provides simple menu for replacing a prepared spell slot with a casting of a class' spontaneous replacement spell (e.g. Cure spells for good Clerics).
- *
- * Caster must have a spellbook with prepared spells and the spontaneous replacement must be set as an at-will spell.
- **/
-
-// CONFIGURATION
-// Leave the actorNames array empty to guess the players
-// Example actorNames: `actorNames: ["Bob", "John"],
-// Fill in allowed prepared caster classes that spontaneous replace in lower case below
-const c = {
-  actorNames: [],
-  spontClasses: ['druid', 'cleric', 'warpriest', 'matreDesForgesNain'],
-  spellbooks: {
-    ' (matreDesForgesNain-primary)': 'Maître des Forges',
-  },
+const configuration = {
+  compatibleClasses: ['druid', 'cleric', 'warpriest'],
 }
-// END CONFIGURATION
+/**
+ * Get the currently prepared spells in the book, ordered highest level to lowest
+ */
+const getPreparedSpells = (actorItems) =>
+  actorItems
+    .filter(
+      ({
+        type,
+        spellLevel,
+        system: { atWill, preparation: { preparedAmount } = {} } = {},
+      }) => type === 'spell' && !atWill && spellLevel > 0 && preparedAmount > 0,
+    )
+    .sort((a, b) => {
+      return b.spellLevel - a.spellLevel
+    })
 
-const openDialog = (actors) => {
-  if (!actors.length) {
-    ui.notifications.warn('Aucun acteur compatible trouvé')
-    return
-  }
-  if (actors.length > 1) {
-    ui.notifications.warn('Un seul acteur doit être selectionné')
-    return
+/**
+ * Get the spells that can be cast spontaneously in the book, ordered highest level to lowest
+ */
+const getSpontaneousSpells = (actorItems) =>
+  actorItems
+    .filter(({ type, system: { atWill } = {} }) => type === 'spell' && atWill)
+    .sort((a, b) => b.spellLevel - a.spellLevel)
+
+const getCompatibleSpellbooks = (actor) => {
+  const {
+    system: {
+      attributes: { spells: { spellbooks } = {} },
+    },
+  } = actor
+
+  const { compatibleClasses } = configuration
+
+  // spells element can use a class ID as a key.
+  return Object.values(spellbooks).filter(({ class: spellbookClass }) =>
+    compatibleClasses.includes(spellbookClass),
+  )
+}
+
+const createSpellbooksOptions = (spellbooks) => {
+  if (spellbooks.length === 0) {
+    return '<option>Aucun grimoire compatible disponible</option>'
   }
 
-  // Check for spellbooks
-  const activeBooks = actor.data.data.attributes.spells.usedSpellbooks
-  if (!activeBooks.length) {
-    ui.notifications.warn(`${actor.data.name} n'a aucun grimoire disponible`)
-    return
-  }
-
-  // Get spellbook info
-  const spellbooks = []
-  activeBooks.forEach((o) => {
-    const book = actor.data.data.attributes.spells.spellbooks[o]
-    if (c.spontClasses.includes(book.class)) spellbooks.push([o, book])
+  console.log(`Spontaneous Casting | Create Books Options `, {
+    spellbooks,
   })
 
-  // Build spellbook options
-  console.log('spellbooks ', spellbooks)
-  let bookOptions = spellbooks.map(
-    (o, index) => `<option value="${o.name}">${o[1].label}</option>`,
+  return spellbooks.map(
+    ({ label }) => `<option value='${label}'>${label}</option>`,
   )
-  if (!bookOptions.length) {
-    ui.notifications.warn(
-      "Aucun grimoire n'est compatible incantation spontannée ",
+}
+
+const createSpellsOptions = (
+  selectedSpellbookLabel,
+  spells,
+  minSlotLevel,
+  maxSlotLevel,
+) => {
+  if (spells.length === 0) {
+    return '<option>Aucun sort disponible</option>'
+  }
+
+  if (minSlotLevel == null) {
+    minSlotLevel = 0
+  }
+
+  if (maxSlotLevel == null) {
+    maxSlotLevel = 9
+  }
+
+  console.log(`Spontaneous Casting | Create Spell Options `, {
+    selectedSpellbookLabel,
+    spells,
+    minSlotLevel,
+    maxSlotLevel,
+  })
+
+  return spells
+    .filter(
+      ({
+        spellLevel,
+        spellbook: { label: currentSpellbookLabel },
+        system: {
+          preparation: { preparedAmount },
+        },
+      }) =>
+        currentSpellbookLabel === selectedSpellbookLabel &&
+        preparedAmount > 0 &&
+        spellLevel >= minSlotLevel &&
+        spellLevel <= maxSlotLevel,
     )
+    .map(
+      ({
+        id,
+        name,
+        system: {
+          atWill,
+          preparation: { preparedAmount, maxAmount },
+        },
+      }) => {
+        const remainedUsageLabel = atWill
+          ? ''
+          : ` ${preparedAmount} / ${maxAmount}`
+        return `<option value="${id}">${name}${remainedUsageLabel}</option>`
+      },
+    )
+    .join('\n')
+}
+
+const createSpellSlotsOptions = (spellSlots, preparedSpells) => {
+  if (spellSlots.length === 0) {
+    return '<option>Aucun slot disponible</option>'
+  }
+
+  // Remove slots with no remaining spell
+  console.log(preparedSpells)
+  const usedSlots = preparedSpells.reduce((map, currentSpell) => {
+    const {
+      spellLevel,
+      system: {
+        preparation: { preparedAmount },
+      },
+    } = currentSpell
+    const spellLevelKey = spellLevel.toString()
+    if (preparedAmount > 0) {
+      map[spellLevelKey] = 1
+    }
+
+    return map
+  }, {})
+
+  return spellSlots
+    .filter((currentSlot) => usedSlots[currentSlot])
+    .map((n) => `<option value="${n}"> Niveau ${n}</option>`)
+}
+
+const editInnerHtml = (htm, selector, value) => {
+  const element = htm.find(selector)?.[0]
+
+  if (element == null) {
+    console.error(`Could not find element "${selector}"`)
+  }
+
+  element.innerHTML = value
+}
+
+const getHtmValue = (htm, selector) => {
+  const element = htm.find(selector)?.[0]
+
+  if (element == null) {
+    console.error(`Could not find element "${selector}"`)
+  }
+
+  return element.value
+}
+
+const refreshSourceOptions = (htm, preparedSpells) => {
+  const spellbookLabel = getHtmValue(htm, '#bookSelect')
+  const slotLevel = parseFloat(getHtmValue(htm, '#slotSelect'))
+
+  const preparedSpellsOptions = createSpellsOptions(
+    spellbookLabel,
+    preparedSpells,
+    slotLevel,
+    slotLevel,
+  )
+  editInnerHtml(htm, '#sourceSelect', preparedSpellsOptions)
+}
+
+const refreshCastOptions = (htm, preparedSpells, spontaneousSpells) => {
+  const spellbookLabel = getHtmValue(htm, '#bookSelect')
+  const spellSourceId = getHtmValue(htm, '#sourceSelect')
+
+  const spellSource = preparedSpells.filter(({ id }) => id === spellSourceId)
+  const { spellLevel: spellSourceLevel } = spellSource
+
+  const preparedSpellsOptions = createSpellsOptions(
+    spellbookLabel,
+    spontaneousSpells,
+    spellSourceLevel,
+  )
+  editInnerHtml(htm, '#castSelect', preparedSpellsOptions)
+}
+
+const openDialog = (selectedTokens) => {
+  if (!selectedTokens.length) {
+    ui.notifications.warn('Aucun token selectionné')
     return
   }
-  // Build prepared slot and spontaneous replacement options
-  console.log(`spontaneous-casting | ${spellbooks[0]}`)
-  let slotOptions = populatePrepared(null, spellbooks[0][0])
-  if (!slotOptions[1].length) {
-    ui.notifications.warn(`${actor.data.name} n\'a aucun sort preparé`)
+  if (selectedTokens.length > 1) {
+    ui.notifications.warn('Un seul token doit être selectionné')
     return
   }
 
-  const slotSpellID = slotOptions[1].length > 0 ? slotOptions[1][0].id : null
-  const castOptions = populateSpontaneous(null, slotSpellID)
+  const { actor } = selectedTokens[0]
+
+  const compatibleSpellbooks = getCompatibleSpellbooks(actor)
+  if (compatibleSpellbooks.length === 0) {
+    ui.notifications.warn(`${actor.name} n'a aucun grimoire compatible`)
+    return
+  }
+
+  const bookOptions = createSpellbooksOptions(compatibleSpellbooks)
+
+  const [{ label: spellbookLabel }] = compatibleSpellbooks
+
+  const {
+    items: { contents: actorItems },
+    name: actorName,
+  } = actor
+
+  console.log('Spontaneous Casting | Actor Items obtained')
+
+  const preparedSpells = getPreparedSpells(actorItems)
+  const preparedSpellsOptions = createSpellsOptions(
+    spellbookLabel,
+    preparedSpells,
+    1,
+    1,
+  )
+
+  console.log('Spontaneous Casting | Actor Prepared Spells obtained')
+
+  const spellSlots = [1, 2, 3, 4, 5, 6, 7, 8, 9]
+  const spellSlotsOptions = createSpellSlotsOptions(spellSlots, preparedSpells)
+
+  const spontaneousSpells = getSpontaneousSpells(actorItems)
+  const spontaneousSpellsOptions = createSpellsOptions(
+    spellbookLabel,
+    spontaneousSpells,
+  )
+
+  console.log('Spontaneous Casting | Actor Spontaneous Spells obtained')
+
   const form = `
   <form class="flexcol">
     <div class="form-group">
       <label>Personnage :</label>
-      <p>${actor.name}</p>
+      <p>${actorName}</p>
     </div>
     <div class="form-group">
       <label>Grimoire :</label>
-      <select id="classSelect" style="text-transform: capitalize">${bookOptions}</select>
+      <select id="bookSelect" style="text-transform: capitalize">${bookOptions}</select>
     </div>
     <div class="form-group">
-      <label>Emplacement :</label>
-      <select id="slotSelect">${slotOptions[0]}</select>
+      <label>Niveau sort :</label>
+      <select id="slotSelect">${spellSlotsOptions}</select>
+    </div>
+    <div class="form-group">
+      <label>Sort à consommer :</label>
+      <select id="sourceSelect" style="min-width: 100%; max-width: 100%;">${preparedSpellsOptions}</select>
     </div>
     <div class="form-group">
       <label>Sort à lancer:</label>
-      <select id="castSelect">${castOptions}</select>
+      <select id="castSelect" style="min-width: 100%; max-width: 100%;">${spontaneousSpellsOptions}</select>
     </div>
   </form>
 `
@@ -91,138 +269,24 @@ const openDialog = (actors) => {
       use: {
         icon: '<i class="fas fa-dice-d20"></i>',
         label: 'Utilise cet emplacement de sort',
-        callback: useSpell,
       },
     },
     render: (htm) => {
-      htm.find('#classSelect').change(populatePrepared.bind(this, htm, null))
-      htm.find('#slotSelect').change(populateSpontaneous.bind(this, htm, null))
+      htm
+        .find('#bookSelect')
+        .change(() => refreshSourceOptions(htm, preparedSpells))
+      htm
+        .find('#slotSelect')
+        .change(() => refreshSourceOptions(htm, preparedSpells))
+      htm
+        .find('#castSelect')
+        .change(() =>
+          refreshCastOptions(htm, preparedSpells, spontaneousSpells),
+        )
     },
   }).render(true)
 }
 
-/**
- * Removes one use of the prepared spell and casts the spontaneous spell
- * Outputs a chat card of the used and replacement spells
- **/
-function useSpell(htm, event) {
-  // Get the info about the spells
-  const usedSlotID = htm.find('#slotSelect')[0].value
-  const spontSpellID = htm.find('#castSelect')[0].value
-  const usedSpell = actor.items.find((o) => o.id === usedSlotID)
-  const spontSpell = actor.items.find((o) => o.id === spontSpellID)
-
-  // Update used spell preparations
-  const newUses = usedSpell.data.data.preparation.preparedAmount - 1
-  actor.items.get(usedSlotID).update({
-    'data.preparation.preparedAmount': newUses,
-  })
-
-  // Build chat card and display
-  let msg = `<div class="pf1 chat-card">
-                    <header class="card-header flexrow">
-                        <h3 class="actor-name">Incantation spontanée</h3>
-                    </header>
-                    <div class="result-text">
-                        <p>${actor.name} perd une utilisation de sort ${usedSpell.data.name} (niveau ${usedSpell.data.data.level}) pour lancer ${spontSpell.name}.</p>
-                    </div>
-                </div>`
-
-  ChatMessage.create({
-    content: msg,
-  })
-
-  spontSpell.use()
-}
-
-/**
- * Populates the prepared options select element with options
- *
- **/
-const populatePrepared = (htm, spellBook) => {
-  // Either get the spellbook info from the form or from the passed name
-  let selectedBook = !spellBook ? htm.find('#classSelect')[0].value : spellBook
-
-  // Get the currently prepared spells in the book, ordered highest level to lowest
-  let availableSpells = actor.data.items
-    .filter(
-      (o) =>
-        o.type === 'spell' &&
-        o.data.data.level > 0 &&
-        !o.data.data.atWill &&
-        o.data.data.preparation.preparedAmount > 0 &&
-        o.data.data.spellbook === selectedBook.toLowerCase(),
-    )
-    .sort(function (a, b) {
-      return b.data.data.level - a.data.data.level
-    })
-
-  // Build the options, if any
-  let slotOptions = ''
-  if (availableSpells.length) {
-    slotOptions = availableSpells.map(
-      (o) =>
-        `<option value="${o.id}">${o.name} (Nv ${o.data.data.level}, ${o.data.data.preparation.preparedAmount} dispo)</option>`,
-    )
-  } else slotOptions = '<option>Aucun sort préparé disponible</option>'
-
-  // If called from the form, update the form
-  if (htm) {
-    htm.find('#slotSelect')[0].innerHTML = slotOptions
-    if (availableSpells.length) populateSpontaneous(htm, availableSpells[0]._id)
-    else populateSpontaneous(htm, null)
-  }
-
-  // For initial form building
-  return [slotOptions, availableSpells]
-}
-
-/**
- * Populates the spontaneous replacement options select element
- **/
-function populateSpontaneous(htm, spellSlotID, event = null) {
-  // Get info about the prepared spell
-  const selectedSpellID = !spellSlotID
-    ? htm.find('#slotSelect')[0].value
-    : spellSlotID
-  const selectedSpell = actor.data.items.find((o) => o.id === selectedSpellID)
-  const slotLevel = selectedSpell?.data.data.level
-
-  // Find at-will spells of the same level or lower to spontaneous cast
-  const spontSpells = actor.data.items
-    .filter(
-      (o) =>
-        o.type === 'spell' &&
-        o.data.data.level <= slotLevel &&
-        o.data.data.atWill &&
-        o.data.data.spellbook ===
-          selectedSpell.data.data.spellbook.toLowerCase(),
-    )
-    .sort(function (a, b) {
-      return b.data.data.level - a.data.data.level
-    })
-
-  // Build the options if any
-  let spontOptions = ''
-  if (spontSpells.length) {
-    spontOptions = spontSpells.map(
-      (o) =>
-        `<option value="${o.id}">${o.name} (lv ${o.data.data.level})</option>`,
-    )
-  } else spontOptions = '<option>Aucun sort sans emplacement</option>'
-
-  // If called from the form, update the form
-  if (htm) {
-    htm.find('#castSelect')[0].innerHTML = spontOptions
-
-    // If no options available, disable the use button
-    htm.find('button')[0].disabled = !spontSpells.length
-  }
-
-  // For initial form building
-  return spontOptions
-}
-
-// Get actors
-const actors = canvas.tokens.controlled
-openDialog(actors)
+// Get actors and open dialogue
+const selectedTokens = canvas.tokens.controlled
+openDialog(selectedTokens)
