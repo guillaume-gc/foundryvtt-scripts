@@ -223,18 +223,6 @@ function populateSpontaneous(htm, spellSlotID, event = null) {
   return spontOptions
 }
 
-// Find the actor
-const tokens = canvas.tokens.controlled
-let actors = tokens.map((o) => o.actor)
-if (!actors.length && c.actorNames.length)
-  actors = game.actors.entities.filter((o) => c.actorNames.includes(o.name))
-if (!actors.length)
-  actors = game.actors.entities.filter(
-    (o) =>
-      o.hasPlayerOwner &&
-      o.testUserPermission(game.user, 'OWNER') &&
-      o.name === game.user.character.name,
-  )
-actors = actors.filter((o) => o.testUserPermission(game.user, 'OWNER'))
-
+// Get actors
+const actors = canvas.tokens.controlled
 openDialog(actors)
