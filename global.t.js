@@ -47,3 +47,23 @@ let canvas
  * @type {UI}
  */
 let ui
+
+/**
+ * @typedef {Object} Scene
+ * @property {function(string, Array<Object>): void} updateEmbeddedDocuments
+ */
+
+/**
+ * @typedef {Object} GameScenes
+ * @property {Scene} viewed
+ */
+
+/**
+ * @typedef {Object} Game
+ * @property {GameScenes} scenes
+ */
+
+/**
+ * @type {Game}
+ */
+let game;

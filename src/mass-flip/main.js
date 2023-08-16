@@ -43,7 +43,7 @@ const openDialog = (canvas, currentActorGroups, ownedTokens) => {
   }).render(true)
 }
 
-const flipTokens = (htm, canvas, ownedTokens) => {
+const flipTokens = async (htm, canvas, ownedTokens) => {
   const actorGroupsLabel = getHtmValue(htm, '#mass-flip-current-actor-groups')
   const decodedActorGroup = decodeURI(actorGroupsLabel)
 
@@ -52,8 +52,6 @@ const flipTokens = (htm, canvas, ownedTokens) => {
     throw new Error(`Actor group "${decodedActorGroup}" not known`)
   }
 
-  console.log('actorGroup', actorGroup)
-
   const imageLabel = getHtmValue(htm, '#mass-flip-images')
 
   const actorGroupFileName = actorGroup.images[imageLabel].fileName
@@ -61,31 +59,38 @@ const flipTokens = (htm, canvas, ownedTokens) => {
     throw new Error(`Image type "${imageLabel}" not known for ${decodedActorGroup} actor group`)
   }
 
-  console.log('ownedTokens', ownedTokens)
-
   const tokensGroup = ownedTokens.filter((token) => token.document.name === decodedActorGroup)
   if (tokensGroup.length === 0) {
     throw new Error(`Token group ${decodedActorGroup} has no controlled token present in the scene`)
   }
 
-  for (const token of tokensGroup) {
-    const relativeTextureTempFileName = getRelativeTextureFileName(token.document.texture.src)
+  const updates = tokensGroup.map((token) => {
+    const currentFullTextureFileName = token.document.texture.src
+    if (currentFullTextureFileName === undefined) {
+      throw new Error('Found a token with no texture')
+    }
 
-    console.log('actorGroupFileName', actorGroupFileName)
-    console.log('relativeTextureTempFileName', relativeTextureTempFileName)
+    const currentRelativeTextureFileName = getRelativeTextureFileName(currentFullTextureFileName)
 
-    const newTextureRelativeFileName = handleWildCard(actorGroup, actorGroupFileName, relativeTextureTempFileName)
+    const newTextureRelativeFileName = handleWildCard(actorGroup, actorGroupFileName, currentRelativeTextureFileName)
 
-    console.log('newTextureRelativeFileName', newTextureRelativeFileName)
-  }
+    const newTextureFullFileName = currentFullTextureFileName.replace(currentRelativeTextureFileName, newTextureRelativeFileName)
+
+    return {
+      _id: token.id,
+      'texture.src': newTextureFullFileName,
+    }
+  })
+
+  await game.scenes.viewed.updateEmbeddedDocuments('Token', updates)
 }
 
-const handleWildCard = (actorGroup, actorGroupFileName, relativeTextureTempFileName) => {
+const handleWildCard = (actorGroup, actorGroupFileName, currentRelativeTextureFileName) => {
   if (!actorGroupFileName.includes('*')) {
     return actorGroupFileName
   }
 
-  const tokenCurrentTextureWildCartValue = getTokenCurrentTextureWildCartValue(actorGroup, relativeTextureTempFileName)
+  const tokenCurrentTextureWildCartValue = getTokenCurrentTextureWildCartValue(actorGroup, currentRelativeTextureFileName)
 
   console.log('tokenCurrentTextureWildCartValue', tokenCurrentTextureWildCartValue)
 
@@ -98,19 +103,19 @@ const getRelativeTextureFileName = (textureFullFileName) => {
   return pathArray[pathArray.length - 1]
 }
 
-const getTokenCurrentTextureWildCartValue = (actorGroup, relativeTextureTempFileName) => {
+const getTokenCurrentTextureWildCartValue = (actorGroup, currentRelativeTextureFileName) => {
   for (const image of Object.values(actorGroup.images)) {
     const [beforeWildCard, afterWildCard] = image.fileName.split('*')
-    if (!(relativeTextureTempFileName.includes(beforeWildCard) && relativeTextureTempFileName.includes(afterWildCard))) {
+    if (!(currentRelativeTextureFileName.includes(beforeWildCard) && currentRelativeTextureFileName.includes(afterWildCard))) {
       continue
     }
 
-    return relativeTextureTempFileName
+    return currentRelativeTextureFileName
       .replace(beforeWildCard, '')
       .replace(afterWildCard, '')
   }
 
-  throw new Error(`Could not find texture ${relativeTextureTempFileName} actor group`)
+  throw new Error(`Could not find texture ${currentRelativeTextureFileName} actor group`)
 }
 
 const getHtmValue = (htm, selector) => {
