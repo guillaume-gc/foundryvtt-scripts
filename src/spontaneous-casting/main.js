@@ -198,7 +198,12 @@ const refreshSourceOptions = (htm, preparedSpells, spontaneousSpells) => {
   refreshCastOptions(htm, preparedSpells, spontaneousSpells)
 }
 
-const refreshSlotOptions = (htm, spellSlots, preparedSpells, spontaneousSpells) => {
+const refreshSlotOptions = (
+  htm,
+  spellSlots,
+  preparedSpells,
+  spontaneousSpells,
+) => {
   const spellSlotsOptions = createSpellSlotsOptions(spellSlots, preparedSpells)
 
   editInnerHtml(htm, '#slotSelect', spellSlotsOptions)
@@ -206,7 +211,13 @@ const refreshSlotOptions = (htm, spellSlots, preparedSpells, spontaneousSpells) 
   refreshSourceOptions(htm, preparedSpells, spontaneousSpells)
 }
 
-const useSpell = (htm, actor, spellSlots, preparedSpells, spontaneousSpells) => {
+const useSpell = (
+  htm,
+  actor,
+  spellSlots,
+  preparedSpells,
+  spontaneousSpells,
+) => {
   const spellToUseId = getHtmValue(htm, '#sourceSelect')
   const spellToCastId = getHtmValue(htm, '#castSelect')
 
@@ -339,10 +350,14 @@ const openDialog = (selectedTokens) => {
     render: (htm) => {
       htm
         .find('#bookSelect')
-        .change(() => refreshSourceOptions(htm, preparedSpells, spontaneousSpells))
+        .change(() =>
+          refreshSourceOptions(htm, preparedSpells, spontaneousSpells),
+        )
       htm
         .find('#slotSelect')
-        .change(() => refreshSourceOptions(htm, preparedSpells, spontaneousSpells))
+        .change(() =>
+          refreshSourceOptions(htm, preparedSpells, spontaneousSpells),
+        )
       htm
         .find('#castSelect')
         .change(() =>
@@ -359,7 +374,6 @@ try {
   const selectedTokens = canvas.tokens.controlled
   openDialog(selectedTokens)
 } catch (e) {
-  ui.notifications.error('Erreur, voir la console pour plus d\'information')
+  ui.notifications.error("Erreur, voir la console pour plus d'information")
   console.error(e)
 }
-
