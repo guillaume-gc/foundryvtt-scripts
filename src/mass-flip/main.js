@@ -4,21 +4,21 @@ const knownActorGroups = {
     images: {
       idle: {
         name: 'Immobile',
-        url: 'horse-*-plain-idle.webm',
+        fileName: 'horse-*-plain-idle.webm',
       },
       walk: {
         name: 'Marcher',
-        url: 'horse-*-plain-walk.webm',
+        fileName: 'horse-*-plain-walk.webm',
       },
       run: {
         name: 'Galoper',
-        url: 'horse-*-plain-gallop.webm',
+        fileName: 'horse-*-plain-gallop.webm',
       },
     },
   },
 }
 
-const openDialog = (canvas, currentActorGroups) => {
+const openDialog = (canvas, currentActorGroups, ownedTokens) => {
   const form = createForm(currentActorGroups)
 
   new Dialog({
@@ -28,7 +28,7 @@ const openDialog = (canvas, currentActorGroups) => {
       use: {
         icon: '<i class="fas fa-dice-d20"></i>',
         label: 'Confirmer le flip',
-        callback: (htm) => flipTokens(htm, canvas, currentActorGroups),
+        callback: (htm) => flipTokens(htm, canvas, ownedTokens),
       },
     },
     render: (htm) => {
@@ -43,8 +43,74 @@ const openDialog = (canvas, currentActorGroups) => {
   }).render(true)
 }
 
-const flipTokens = (htm, canvas, currentActorGroups) => {
+const flipTokens = (htm, canvas, ownedTokens) => {
   const actorGroupsLabel = getHtmValue(htm, '#mass-flip-current-actor-groups')
+  const decodedActorGroup = decodeURI(actorGroupsLabel)
+
+  const actorGroup = knownActorGroups[actorGroupsLabel]
+  if (actorGroup === undefined) {
+    throw new Error(`Actor group "${decodedActorGroup}" not known`)
+  }
+
+  console.log('actorGroup', actorGroup)
+
+  const imageLabel = getHtmValue(htm, '#mass-flip-images')
+
+  const actorGroupFileName = actorGroup.images[imageLabel].fileName
+  if (actorGroupFileName === undefined) {
+    throw new Error(`Image type "${imageLabel}" not known for ${decodedActorGroup} actor group`)
+  }
+
+  console.log('ownedTokens', ownedTokens)
+
+  const tokensGroup = ownedTokens.filter((token) => token.document.name === decodedActorGroup)
+  if (tokensGroup.length === 0) {
+    throw new Error(`Token group ${decodedActorGroup} has no controlled token present in the scene`)
+  }
+
+  for (const token of tokensGroup) {
+    const relativeTextureTempFileName = getRelativeTextureFileName(token.document.texture.src)
+
+    console.log('actorGroupFileName', actorGroupFileName)
+    console.log('relativeTextureTempFileName', relativeTextureTempFileName)
+
+    const newTextureRelativeFileName = handleWildCard(actorGroup, actorGroupFileName, relativeTextureTempFileName)
+
+    console.log('newTextureRelativeFileName', newTextureRelativeFileName)
+  }
+}
+
+const handleWildCard = (actorGroup, actorGroupFileName, relativeTextureTempFileName) => {
+  if (!actorGroupFileName.includes('*')) {
+    return actorGroupFileName
+  }
+
+  const tokenCurrentTextureWildCartValue = getTokenCurrentTextureWildCartValue(actorGroup, relativeTextureTempFileName)
+
+  console.log('tokenCurrentTextureWildCartValue', tokenCurrentTextureWildCartValue)
+
+  return actorGroupFileName.replace('*', tokenCurrentTextureWildCartValue)
+}
+
+const getRelativeTextureFileName = (textureFullFileName) => {
+  const pathArray = textureFullFileName.split('/')
+
+  return pathArray[pathArray.length - 1]
+}
+
+const getTokenCurrentTextureWildCartValue = (actorGroup, relativeTextureTempFileName) => {
+  for (const image of Object.values(actorGroup.images)) {
+    const [beforeWildCard, afterWildCard] = image.fileName.split('*')
+    if (!(relativeTextureTempFileName.includes(beforeWildCard) && relativeTextureTempFileName.includes(afterWildCard))) {
+      continue
+    }
+
+    return relativeTextureTempFileName
+      .replace(beforeWildCard, '')
+      .replace(afterWildCard, '')
+  }
+
+  throw new Error(`Could not find texture ${relativeTextureTempFileName} actor group`)
 }
 
 const getHtmValue = (htm, selector) => {
@@ -113,7 +179,7 @@ const createImageOptions = (htm) => {
 
   return Object.keys(images)
     .map((key) => `<option value='${key}'>${images[key].name}</option>`)
-    .toString()
+    .join('')
 }
 
 try {
@@ -129,7 +195,7 @@ try {
       ),
   )
 
-  openDialog(canvas, currentActorGroups)
+  openDialog(canvas, currentActorGroups, ownedTokens)
 } catch (error) {
   ui.notifications.error("Erreur, voir la console pour plus d'information")
   console.error(error)
