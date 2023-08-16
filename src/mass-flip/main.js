@@ -156,7 +156,7 @@ const createForm = (currentActorGroups) => `
 
 const createActorGroupOptions = (actorGroups) => {
   if (actorGroups.size === 0) {
-    return '<option>Aucun acteur compatible sur la scène actuelle</option>'
+    return '<option>Aucun acteur compatible</option>'
   }
 
   return [...actorGroups].map(
